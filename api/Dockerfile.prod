@@ -1,0 +1,25 @@
+# --- 构建阶段 ---
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+# 运行 Prisma Generate，确保客户端是最新的
+RUN npx prisma generate
+# 使用 tsc 编译 TypeScript 代码
+RUN npm run build 
+# (需要在 package.json 中添加 "build": "tsc")
+
+# --- 生产阶段 ---
+FROM node:18-alpine
+WORKDIR /app
+# 从构建阶段复制编译好的代码和 node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+# 复制 prisma schema 以便运行时使用
+COPY --from=builder /app/prisma ./prisma
+COPY package*.json ./
+
+EXPOSE 4000
+# 生产模式下直接用 node 运行编译后的 JS 文件
+CMD ["node", "dist/index.js"]

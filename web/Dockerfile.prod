@@ -1,0 +1,20 @@
+# --- 构建阶段 ---
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+# 运行 Next.js 生产构建命令
+RUN npm run build
+
+# --- 生产阶段 ---
+FROM node:18-alpine
+WORKDIR /app
+# 从构建阶段复制必要的文件
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+EXPOSE 3000
+CMD ["npm", "start"]
