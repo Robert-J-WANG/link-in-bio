@@ -12,18 +12,13 @@ jobs:
       packages: write
 
     steps:
-      # 新增步骤：将仓库所有者（您的用户名）转换为小写，并设置为输出变量
-      - name: Set owner to lowercase
-        id: string
-        run: echo "owner_lc=${{ github.repository_owner,, }}" >> $GITHUB_OUTPUT
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Run Backend Unit & Integration Tests
         run: |
           echo "将来在这里运行后端测试..."
-
+          
       - name: Log in to the GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -37,8 +32,8 @@ jobs:
           context: ./api
           file: ./api/Dockerfile.prod
           push: true
-          # 【修正】使用转换后的小写用户名
-          tags: ghcr.io/${{ steps.string.outputs.owner_lc }}/${{ github.event.repository.name }}/api:latest
+          # 【已修正】使用官方 toLowerCase() 函数，这是正确的语法
+          tags: ghcr.io/${{ toLowerCase(github.repository_owner) }}/${{ github.event.repository.name }}/api:latest
 
       - name: Build and push Web production image
         uses: docker/build-push-action@v5
@@ -46,5 +41,5 @@ jobs:
           context: ./web
           file: ./web/Dockerfile.prod
           push: true
-          # 【修正】使用转换后的小写用户名
-          tags: ghcr.io/${{ steps.string.outputs.owner_lc }}/${{ github.event.repository.name }}/web:latest
+          # 【已修正】使用官方 toLowerCase() 函数，这是正确的语法
+          tags: ghcr.io/${{ toLowerCase(github.repository_owner) }}/${{ github.event.repository.name }}/web:latest
