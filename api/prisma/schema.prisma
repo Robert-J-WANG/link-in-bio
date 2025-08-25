@@ -24,6 +24,7 @@ model Link {
   title     String
   url       String
   createdAt DateTime @default(now())
+  clicks    Int      @default(0) // <-- 新增这一行
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
 }
