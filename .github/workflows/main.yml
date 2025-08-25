@@ -31,7 +31,8 @@ jobs:
           context: ./api
           file: ./api/Dockerfile.prod
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ toLowerCase(github.repository_owner) }}/${{ github.event.repository.name }}/api:latest
+          # 【已修正】使用官方正确的 toLower() 函数
+          tags: ghcr.io/${{ toLower(github.repository_owner) }}/${{ github.event.repository.name }}/api:latest
 
       - name: Build and push Web production image
         uses: docker/build-push-action@v5
@@ -39,8 +40,9 @@ jobs:
           context: ./web
           file: ./web/Dockerfile.prod
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ toLowerCase(github.repository_owner) }}/${{ github.event.repository.name }}/web:latest
-
+          # 【已修正】使用官方正确的 toLower() 函数
+          tags: ghcr.io/${{ toLower(github.repository_owner) }}/${{ github.event.repository.name }}/web:latest
+          
       - name: Trigger Render Backend Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
