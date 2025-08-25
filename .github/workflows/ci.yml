@@ -1,0 +1,48 @@
+name: Continuous Integration - Build, Test, and Push Images
+
+on:
+  # 当有针对 main 分支的 Pull Request 时触发
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 虚拟机环境
+    permissions:
+      contents: read
+      packages: write # 需要写权限来推送镜像到 GHCR
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # (可选，但强烈推荐) 在这里可以增加运行测试的步骤
+      - name: Run Backend Unit & Integration Tests
+        run: |
+          echo "将来在这里运行后端测试..."
+          # 例如: docker-compose -f docker-compose.test.yml run --rm api npm test
+          
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN 是 GitHub Actions 自动生成的，无需手动创建
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API production image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          file: ./api/Dockerfile.prod # 使用生产环境的 Dockerfile
+          push: true
+          # 镜像的标签格式：ghcr.io/你的用户名/仓库名/镜像名:latest
+          tags: ghcr.io/${{ github.repository }}/api:latest
+
+      - name: Build and push Web production image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          file: ./web/Dockerfile.prod # 使用生产环境的 Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/web:latest
