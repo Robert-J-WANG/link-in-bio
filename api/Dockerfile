@@ -16,5 +16,7 @@ COPY . .
 # 暴露 API 服务运行的端口
 EXPOSE 4000
 
+# 关键一步，生成 Prisma Client
+RUN npx prisma generate
 # 容器启动时执行的命令 (开发模式，带热重载)
 CMD ["npm", "run", "dev"]
