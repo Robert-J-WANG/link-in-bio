@@ -3,18 +3,17 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# 复制依赖声明文件并安装依赖
 COPY package*.json ./
 RUN npm install
 
-# 复制 Prisma schema 并生成 client
 COPY prisma ./prisma/
 RUN npx prisma generate
 
-# 复制所有源代码
 COPY . .
 
-# 确保 package.json 中有 "build": "tsc"
+# 👇 单独确保 start.sh 被复制进 builder
+COPY start.sh ./start.sh
+
 RUN npm run build 
 
 
@@ -23,18 +22,13 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# 复制编译后的代码、依赖、Prisma、package.json
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
-
-# 复制启动脚本，并赋予执行权限
 COPY --from=builder /app/start.sh ./start.sh
+
 RUN chmod +x ./start.sh
 
-# Render 会注入 PORT 环境变量，EXPOSE 只是文档说明
 EXPOSE 10000
-
-# 启动时执行脚本
 CMD ["./start.sh"]
