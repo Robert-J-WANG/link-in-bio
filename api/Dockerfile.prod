@@ -31,5 +31,4 @@ COPY --from=builder /app/start.sh ./start.sh
 RUN chmod +x ./start.sh
 
 EXPOSE 10000
-CMD ["sh", "./api/start.sh"]
-
+CMD ["sh", "./start.sh"]
